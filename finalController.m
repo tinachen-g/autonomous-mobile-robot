@@ -67,6 +67,21 @@ while toc < maxTime
     [noRobotCount,dataStore]=readStoreSensorData(Robot,noRobotCount,dataStore);
     
     % CONTROL FUNCTION (send robot commands)
+        %TURN in place: robot 360- yes or no beacon
+        %bug algorithm
+            %move a certain distance and spin around every __meters looking
+            %for a beacon
+        %once beacon is found - loaclize (where am i?)
+        %do a circle around the general area to ensure the guess is
+        %correct: map out the general area to ensure we are in the correct
+        %place: use depth predict/mapping: check which walls are optional- scan the area
+        %around to determine distance and orientation to the gap
+            %depth predict to sense optional wall is running in the
+            %background
+        %run potentialplanner RRT
+        %continue to map locally to ensure we are in the correct location
+        %(scan other beacons)
+        %beep when waypoint is detected 
 
     % Set angular velocity
     cmdV = 0;
