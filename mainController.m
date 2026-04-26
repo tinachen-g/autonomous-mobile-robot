@@ -356,13 +356,17 @@ while toc < maxTime
 
                     % resample with minority retention so the filter stays
                     % recoverable if the bump was against the wrong wall
-                    nMinority    = round(N_particles * FRAC_MINORITY);
-                    nMajority    = N_particles - nMinority;
-                    idx_majority = randsample(N_particles, nMajority, true, weights);
-                    pMajority    = particles(idx_majority, :);
-                    pMinority    = seedParticles(waypoints, nMinority);
-                    particles    = [pMajority; pMinority];
-                    weights      = ones(N_particles, 1) / N_particles;
+                    nMinority = round(N_particles * FRAC_MINORITY);
+                    nMajority = N_particles - nMinority;
+                    weights = weights(:) / sum(weights);
+                    cdf = cumsum(weights);
+                   
+                    r = rand(nMajority, 1);
+                    idx_majority = arrayfun(@(x) find(cdf >= x, 1, 'first'), r);
+                    pMajority = particles(idx_majority, :);
+                    pMinority = seedParticles(waypoints, nMinority);
+                    particles = [pMajority; pMinority];
+                    weights = ones(N_particles, 1) / N_particles;
 
                 else
                     % drive straight; use live beacon bearing to stay on course
