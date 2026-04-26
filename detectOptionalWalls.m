@@ -37,6 +37,14 @@ for i = 1:numoptwalls
     % predicted depth measurements
     depthfixed = depthPredict(pose_est, fixedmap, sensorOrigin, angles);
     depthoptional = depthPredict(pose_est, optionalmap, sensorOrigin, angles);
+    depth_meas = depth_meas(:);
+    depthfixed = depthfixed(:);
+    depthoptional = depthoptional(:);
+
+    N = min(length(depth_meas), length(depthfixed));
+    depth_meas = depth_meas(1:N);
+    depthfixed = depthfixed(1:N);
+    depthoptional = depthoptional(1:N);
 
     % filter depth measurements
     % can tune depth measurement range for accuracy with testing
@@ -46,7 +54,13 @@ for i = 1:numoptwalls
     if nnz(predictmeas) < 2
         continue
     end
-    
+
+    predictmeas = predictmeas(:);
+
+    N = min(length(depth_meas), length(depthfixed));
+    depth_meas = depth_meas(1:N);
+    depthfixed = depthfixed(1:N);
+    predictmeas = predictmeas(1:N);
 
     % finds error between measurement depths and fixed/optional wall depths
     fixederror = mean(abs(depth_meas(predictmeas)-depthfixed(predictmeas)));
