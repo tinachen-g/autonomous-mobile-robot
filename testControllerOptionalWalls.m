@@ -47,7 +47,8 @@ dataStore = struct('truthPose', [],...
                    'odometry', [], ...
                    'rsdepth', [], ...
                    'bump', [], ...
-                   'beacon', []);
+                   'beacon', [], ...
+                   'wallBelief', []);
 
 
 % Variable used to keep track of whether the overhead localization "lost"
@@ -55,6 +56,20 @@ dataStore = struct('truthPose', [],...
 % If the robot doesn't know where it is we want to stop it for
 % safety reasons.
 noRobotCount = 0;
+
+mapfile = 'PracticeMap2026.mat';
+
+S = load(mapfile);
+numOptWalls = size(S.optWalls,1);
+
+wallBelief.presentScore = zeros(numOptWalls,1);
+wallBelief.absentScore  = zeros(numOptWalls,1);
+wallBelief.state        = zeros(numOptWalls,1);  % 1 present, 0 unknown, -1 absent
+
+sensorOrigin = [0 0.08];
+
+numDepthRays = 9;
+angles = linspace(deg2rad(27), -deg2rad(27), numDepthRays);
 
 SetFwdVelAngVelCreate(Robot, 0,0);
 tic
@@ -67,7 +82,17 @@ while toc < maxTime
     
     % Set angular velocity
     cmdV = 0;
-    cmdW = 0.5;
+    cmdW = 0.2;
+
+    % call function to detect optional walls
+    pose_est = dataStore.truthPose(end,2:4);
+    depth_meas = dataStore.rsdepth(end,3:end);
+
+    wallBelief = detectOptionalWalls(wallBelief, pose_est, depth_meas, ...
+    mapfile, sensorOrigin, angles);
+
+    dataStore.wallBelief = wallBelief;
+
     
     % Call limitCmds function HERE
     wheel2center = 0.13;
