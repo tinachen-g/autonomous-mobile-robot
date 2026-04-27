@@ -63,8 +63,8 @@ S = load(mapfile);
 numOptWalls = size(S.optWalls,1);
 
 wallBelief.presentScore = zeros(numOptWalls,1);
-wallBelief.absentScore  = zeros(numOptWalls,1);
-wallBelief.state        = zeros(numOptWalls,1);  % 1 present, 0 unknown, -1 absent
+wallBelief.absentScore = zeros(numOptWalls,1);
+wallBelief.state = zeros(numOptWalls,1);  % 1 present, 0 unknown, -1 absent
 
 sensorOrigin = [0 0.08];
 
