@@ -48,7 +48,7 @@ for i = 1:numoptwalls
 
     % filter depth measurements
     % can tune depth measurement range for accuracy with testing
-    validmeas = ~isnan(depth_meas) & depth_meas > 0.1 & depth_meas < 2.7;
+    validmeas = ~isnan(depth_meas) & depth_meas > 0.1 & depth_meas < 2.4;
     % can tune error threshold between predicted depths
     predictmeas = validmeas & abs(depthoptional - depthfixed) > 0.1;
     if nnz(predictmeas) < 2
