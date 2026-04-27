@@ -1,6 +1,6 @@
 % PLOTTING OPTIONAL WALL RESULTS
 
-data = load('detectoptwallsrun.mat');
+data = load('simoptwallsrun2.mat');
 dataStore = data.dataStore;
 
 mapdata = load('PracticeMap2026.mat');
