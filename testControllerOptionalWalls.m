@@ -82,7 +82,7 @@ while toc < maxTime
     
     % Set angular velocity
     cmdV = 0;
-    cmdW = 0.2;
+    cmdW = 0.4;
 
     % call function to detect optional walls
     pose_est = dataStore.truthPose(end,2:4);
