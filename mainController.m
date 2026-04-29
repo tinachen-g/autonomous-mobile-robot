@@ -98,8 +98,8 @@ localized = false;
 estimatedPose = [];
 accumulatedBeacons = [];   % rows: [tagNum, bearing_cam]  (camera frame bearing)
 
-SPIN_RATE = 0.7;
-SPIN_DURATION = (2*pi / SPIN_RATE) * 1.15;
+SPIN_RATE = 0.4;
+SPIN_DURATION = (2*pi / SPIN_RATE) * 2; % two spins
 
 EXPLORE_DIST = 3.0; % meters per exploration step
 EXPLORE_SPEED = 0.15; % m/s while exploring
