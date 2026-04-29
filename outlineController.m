@@ -1,7 +1,7 @@
-function[dataStore] = mainController(Robot,maxTime)
-% mainController: final program to use with iRobot Create (or simulator).
+function[dataStore] = outlineController(Robot,maxTime)
+% outlineController: simple skeleton program to use with iRobot Create (or simulator).
 %
-%   dataStore = MAINCONTROLLER(Robot,maxTime) runs 
+%   dataStore = OUTLINECONTROLLER(Robot,maxTime) runs 
 % 
 %   INPUTStype
 %       Robot       Port configurations and robot name (get from running CreatePiInit)
@@ -175,7 +175,9 @@ while toc < maxTime
 
     end
 
-    % live plot
+    % live plot — update every iteration, drawnow limitrate keeps it cheap
+    updateLivePlot(particles, weights, estimatedPose, dataStore, ...
+                   map, optWalls, waypoints, ECwaypoints, beaconLoc, phase);
 
     % if overhead localization loses the robot for too long, stop it
     if noRobotCount >= 5
