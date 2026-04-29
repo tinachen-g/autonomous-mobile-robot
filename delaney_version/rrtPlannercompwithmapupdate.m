@@ -40,15 +40,12 @@ noRobotCount = 0;
 % stop robot initially
 SetFwdVelAngVelCreate(Robot, 0, 0);
 
-% ---------- SETTINGS ----------
+% variables
 mapfile = 'PracticeMap2026.mat';
-
 S = load(mapfile);
-
 robot_radius = 0.2;
-
+% map boundary
 outer = S.map(1:4,:);
-
 pts = [outer(:,1:2); outer(:,3:4)];
 
 xmin = min(pts(:,1));
@@ -76,18 +73,16 @@ pathBuilt = false;
 
 currentGoalIdx = [];
 currentGoal = [];
-
 needReplan = true;
 
 numOptWalls = size(S.optWalls,1);
 
 wallBelief.presentScore = zeros(numOptWalls,1);
 wallBelief.absentScore = zeros(numOptWalls,1);
-wallBelief.state = zeros(numOptWalls,1);  % 1 present, 0 unknown, -1 absent
+wallBelief.state = zeros(numOptWalls,1);
 lastWallState = wallBelief.state;
 
 sensorOrigin = [0 0.08];
-
 numDepthRays = 9;
 angles = linspace(deg2rad(27), -deg2rad(27), numDepthRays);
 
@@ -103,18 +98,15 @@ while toc < maxTime
         continue;
     end
     
-% ---------- WAYPOINT MANAGER + RRT PLANNING ----------
+    % RRT planning function calling
 
-robotXY = dataStore.truthPose(end,2:3);
+    robotXY = dataStore.truthPose(end,2:3);
 
-    % Check if current waypoint was reached
+    % check if current waypoint was reached
     if ~isempty(currentGoalIdx)
-    
         distToGoal = norm(robotXY - currentGoal);
-    
         if distToGoal <= 0.2
             disp(['Visited waypoint ', num2str(currentGoalIdx)]);
-    
             visited(currentGoalIdx) = true;
             dataStore.visitedWaypoints = allWaypoints(visited,:);
     
@@ -158,12 +150,12 @@ robotXY = dataStore.truthPose(end,2:3);
         end
     end
 
-    % Build/rebuild RRT if needed
+    % build/rebuild RRT if needed
     if needReplan && ~isempty(currentGoalIdx)
     
         start = robotXY;
     
-        % updated planning map: fixed walls + detected optional walls
+        % updated planning map
         planningMap = makePlanningMap(S, wallBelief);
     
         tempMap.map = planningMap;
