@@ -36,7 +36,8 @@ catch
     CreatePort = Robot;
 end
 
-data        = load('practicemap2025update.mat');
+MAPFILE = 'practicemap2025update.mat';
+data        = load(MAPFILE);
 map         = data.map;
 optWalls    = data.optWalls;
 waypoints   = data.waypoints;
@@ -151,26 +152,15 @@ while toc < maxTime
 
     %% BEACON observations (CHECK DURING OPEN LAB)
     try
-        [beacX, ~, beacZ, ~, Ntag] = ReadBeacon(Robot);
-        if ~isempty(Ntag)
-            for i = 1:length(Ntag)
-                % Camera frame: Z is forward (robot +X), X is left (robot +Y)
-                % Bearing in camera frame (angle from robot forward axis)
-                bearing_cam = -atan2(beacX(i), beacZ(i));   % radians, + = left
-                accumulatedBeacons = [accumulatedBeacons; Ntag(i), bearing_cam]; %#ok
-
+        tags = RealSenseTag(Robot);
+        if ~isempty(tags)
+            for i = 1:size(tags, 1)
+                tagId = tags(i, 2);
+                z = tags(i, 3);
+                x_cam = tags(i, 4);
+                bearing_cam = -atan2(x_cam, z);  % same convention as before
+                accumulatedBeacons = [accumulatedBeacons; tagId, bearing_cam]; %#ok
             end
-
-            % if ~isempty(accumulatedBeacons)
-            %     fprintf('Detected beacons:\n');
-            %     for i = 1:size(accumulatedBeacons, 1)
-            %         fprintf('Tag %d -> Bearing: %.3f rad, ', ...
-            %             accumulatedBeacons(i,1), accumulatedBeacons(i,2));
-            %     end
-            %     disp('\n =================== \n');
-            % 
-            % end
-
         end
     catch
         disp('[PHASE I] no beacon available.');
@@ -274,9 +264,14 @@ while toc < maxTime
     
             case 'RESPIN'
                 % spin slowly; stop the moment any beacon is detected
-                [beacX, ~, beacZ, ~, Ntag] = ReadBeacon(Robot);
+                tags = RealSenseTag(Robot);
+                Ntag = [];
+                if ~isempty(tags)
+                    Ntag = tags(:, 2);
+                    beacX = tags(:, 4);
+                    beacZ = tags(:, 3);
+                end
                 if ~isempty(Ntag)
-                    % pick the one with smallest |bearing| (most forward)
                     bearings = -atan2(beacX, beacZ);
                     [~, bestIdx] = min(abs(bearings));
                     tagNum = Ntag(bestIdx);
@@ -298,7 +293,13 @@ while toc < maxTime
     
             case 'ALIGN'
                 % keep reading beacon bearing live and correct heading
-                [beacX, ~, beacZ, ~, Ntag] = ReadBeacon(Robot);
+                tags = RealSenseTag(Robot);
+                Ntag = [];
+                if ~isempty(tags)
+                    Ntag = tags(:, 2);
+                    beacX = tags(:, 4);
+                    beacZ = tags(:, 3);
+                end
                 if ~isempty(Ntag)
                     idx = find(Ntag == dataStore.ppTag, 1);
                     if ~isempty(idx)
@@ -370,7 +371,13 @@ while toc < maxTime
 
                 else
                     % drive straight; use live beacon bearing to stay on course
-                    [beacX, ~, beacZ, ~, Ntag] = ReadBeacon(Robot);
+                    tags = RealSenseTag(Robot);
+                    Ntag = [];
+                    if ~isempty(tags)
+                        Ntag = tags(:, 2);
+                        beacX = tags(:, 4);
+                        beacZ = tags(:, 3);
+                    end
                     cmdV = EXPLORE_SPEED;
                     cmdW = 0;
                     if ~isempty(Ntag)

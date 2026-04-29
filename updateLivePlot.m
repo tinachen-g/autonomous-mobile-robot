@@ -86,7 +86,7 @@ if isempty(hFig) || ~isvalid(hFig)
     scatter(hAxes, NaN, NaN, 6, [0.6 0.6 0.65], 'filled', ...
             'DisplayName','Particles');
 
-    hLeg = legend(hAxes,'show','Location','northeast');
+    hLeg = legend(hAxes,'show','Location','eastoutside');
     set(hLeg,'Color',[0.17 0.17 0.19],'TextColor',[0.82 0.82 0.85], ...
              'EdgeColor',[0.30 0.30 0.33],'FontSize',8,'FontName','Menlo');
 
