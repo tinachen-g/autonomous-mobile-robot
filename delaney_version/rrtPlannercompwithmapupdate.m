@@ -65,7 +65,7 @@ visited = false(size(allWaypoints,1),1);
 dataStore.visitedWaypoints = [];
 
 closeEnough = 0.1;
-epsilon = 0.1;
+epsilon = 0.3;
 
 path = [];
 gotopt = 1;

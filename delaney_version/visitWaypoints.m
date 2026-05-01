@@ -36,7 +36,7 @@ if distance < closeEnough
 end
 
 % provide inputs to feedbackLin function
-speed = 1;
+speed = 0.5;
 cmdVx = speed*x_dist;
 cmdVy = speed*y_dist;
 theta = dataStore.truthPose(end, 4);
