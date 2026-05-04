@@ -1,4 +1,4 @@
-function[dataStore] = rrtPlannercompwithmapupdate(Robot, maxTime)
+function[dataStore] = rrtPlannercompwithmapupdatenew(Robot, maxTime)
 % RRTPLANNER: builds an RRT path once, then follows it with visitWaypoints
 %
 % INPUTS:
@@ -31,8 +31,8 @@ dataStore = struct('truthPose', [],...
                    'bump', [], ...
                    'beacon', [],...
                    'rrtPath', [], ...
-                   'rrtNodes', [], ...
-                   'rrtParent', [], ...
+                   'rrtNodes', {}, ...
+                   'rrtParent', {}, ...
                    'wallBelief', [], ...
                    'visitedWaypoints', []);
 
@@ -66,7 +66,7 @@ visited = false(size(allWaypoints,1),1);
 dataStore.visitedWaypoints = [];
 
 closeEnough = 0.1;
-epsilon = 0.3;
+epsilon = 0.1;
 
 path = [];
 gotopt = 1;
@@ -82,6 +82,7 @@ wallBelief.presentScore = zeros(numOptWalls,1);
 wallBelief.absentScore = zeros(numOptWalls,1);
 wallBelief.state = zeros(numOptWalls,1);
 lastWallState = wallBelief.state;
+mapChangedSinceLastPlan = false;
 
 sensorOrigin = [0 0.08];
 numDepthRays = 9;
@@ -113,7 +114,7 @@ while toc < maxTime
     
             % beep when waypoint is reached
             try
-                BeepRoomba(Robot);
+                BeepCreate(Robot);
             catch
                 disp('Beep skipped');
             end
@@ -188,8 +189,8 @@ while toc < maxTime
             gotopt = 2;
     
             dataStore.rrtPath = path;
-            dataStore.rrtNodes = V;
-            dataStore.rrtParent = parent;
+            dataStore.rrtNodes{end+1} = V;
+            dataStore.rrtParent{end+1} = parent;
         end
     end
     
@@ -202,7 +203,15 @@ while toc < maxTime
             cmdW = 0;
     
             pathBuilt = false;
-            needReplan = true;
+    
+            % Only replan here, after finishing the current path/waypoint segment
+            if mapChangedSinceLastPlan
+                disp('Replanning now because map changed during previous path');
+                needReplan = true;
+                mapChangedSinceLastPlan = false;
+            else
+                needReplan = true;
+            end
         end
     else
         cmdV = 0;
@@ -219,14 +228,14 @@ while toc < maxTime
     dataStore.wallBelief = wallBelief;
 
     if any(wallBelief.state ~= lastWallState)
-        disp('Wall belief changed, replanning with updated map');
-        needReplan = true;
+        disp('Wall belief changed, will replan after current waypoint');
+        mapChangedSinceLastPlan = true;
         lastWallState = wallBelief.state;
     end
 
     % limit commands
     wheel2center = 0.13;
-    maxV = 0.4;
+    maxV = 0.2;
     [cmdV, cmdW] = limitCmds(cmdV, cmdW, maxV, wheel2center);
     
     % if localization is lost, stop robot
@@ -252,7 +261,9 @@ fixedWalls = S.map;
 if isempty(S.optWalls)
     presentOptWalls = zeros(0,4);
 else
-    presentOptWalls = S.optWalls(wallBelief.state == 1, :);
+    % Include optional walls that are present or still unknown.
+    % Exclude only walls that are confidently absent.
+    presentOptWalls = S.optWalls(wallBelief.state >= 0, :);
 end
 
 planningMap = [fixedWalls; presentOptWalls];

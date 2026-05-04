@@ -23,7 +23,7 @@ function [path, V, parent] = buildRRTcomp(compMapFile, mapBoundary, start, goal,
 %   parent         parent list
 
 % ---------------- PARAMETERS ----------------
-step_size = 0.2;
+step_size = 0.1;
 max_nodes = 10000;
 goal_tol = 0.5;
 tol = 1e-9;
@@ -109,16 +109,25 @@ for k = 1:max_nodes
     parent = [parent; min_node];
     new_node = size(V,1);
 
-    % Check if goal can be connected directly
-    if norm(q_new - goal) < goal_tol
-        if ~edgeCollision(q_new, goal, walls, mapBoundary, clearance)
-            V = [V; goal];
-            parent = [parent; new_node];
-
-            goal_node = size(V,1);
-            goal_found = true;
-            break;
-        end
+    % % Check if goal can be connected directly
+    % if norm(q_new - goal) < goal_tol
+    %     if ~edgeCollision(q_new, goal, walls, mapBoundary, clearance)
+    %         V = [V; goal];
+    %         parent = [parent; new_node];
+    % 
+    %         goal_node = size(V,1);
+    %         goal_found = true;
+    %         break;
+    %     end
+    % end
+    % Check if goal can be connected directly from any new node
+    if ~edgeCollision(q_new, goal, walls, mapBoundary, clearance)
+        V = [V; goal];
+        parent = [parent; new_node];
+    
+        goal_node = size(V,1);
+        goal_found = true;
+        break;
     end
 end
 
