@@ -55,46 +55,6 @@ dataStore = struct('truthPose',          [], ...
                    'beacon',             []);
 
 
-% Variable used to keep track of whether the overhead localization "lost"
-% the robot (number of consecutive times the robot was not identified).
-% If the robot doesn't know where it is we want to stop it for
-% safety reasons.
-noRobotCount = 0;
-wheel2Center = 0.13;
-maxV = 0.2;
-
-phase = 'SPIN';
-phaseStart = 0;
-
-
-% dead-reckoning
-x = 0;
-y = 0;
-theta = 0;
-
-% particle filter
-N_particles = 300;
-N_orient = 50;
-
-disp(waypoints);
-particles = seedParticles(waypoints, N_particles);
-weights = ones(N_particles, 1) / N_particles;
-
-% localization bookkeeping
-localized = false;
-estimatedPose = [];
-accumulatedBeacons = [];   % rows: [tagNum, bearing_cam]  (camera frame bearing)
-
-SPIN_RATE = 0.4;
-SPIN_DURATION = (2*pi / SPIN_RATE) * 2; % two spins
-
-EXPLORE_DIST = 3.0; % meters per exploration step
-EXPLORE_SPEED = 0.15; % m/s while exploring
-MAX_INIT_TIME = 10;
-
-% minority-particle fraction kept spread across all waypoints after resample
-% so the filter can recover if it locked to the wrong starting position
-FRAC_MINORITY = 0.10;
 
 SetFwdVelAngVelCreate(Robot, 0,0);
 tic
@@ -111,13 +71,7 @@ while toc < maxTime
         % fprintf('deltaA = %.4f\n', deltaA); 
         dataStore.odometry = [dataStore.odometry; toc deltaD deltaA];
 
-        % dead-reckoning update
-        theta = mod(theta + deltaA + pi, 2*pi) - pi; 
-        % fprintf('theta = %.4f\n', theta); 
-        x = x + deltaD*cos(theta);
-        y = y + deltaD*sin(theta);
-
-        % store raw dead-reckoning path
+ 
     catch
         disp('[PHASE I] Error retrieving or saving odometry data.');
     end
@@ -131,7 +85,7 @@ while toc < maxTime
                 z = tags(i, 3);
                 x_cam = tags(i, 4);
                 bearing_cam = -atan2(x_cam, z);  % same convention as before
-                accumulatedBeacons = [accumulatedBeacons; tagId, bearing_cam]; %#ok
+
             end
         end
     catch
